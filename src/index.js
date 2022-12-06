@@ -1,14 +1,14 @@
 import express from 'express';
-const app = express();
-app.use(express.json());
 import database from "../src/databaseConnectivity.js";
 import { validatePassword, validateUsername } from "../src/validationFunctions.js";
-const hostname = 'localhost';
-const port = 3000;
+
+const app = express();
+app.use(express.json());
+app.use('/', express.static('./public', { extensions: ['html'] }));
 
 //----------------------------------------------------------
 //API routes for user authentication and account creation
-app.post('/sign-up', async (request, response) => {
+app.post('/api/sign-up', async (request, response) => {
     const credentials = request.body
     const username = credentials.username;
     const password = credentials.password
@@ -25,7 +25,7 @@ app.post('/sign-up', async (request, response) => {
 });
 
 
-app.post('/sign-in', async (request, response) => {
+app.post('/api/sign-in', async (request, response) => {
     const credentials = request.body
     const username = credentials.username;
     const password = credentials.password
@@ -41,31 +41,34 @@ app.post('/sign-in', async (request, response) => {
 
 //---------------------------------------------------------
 //API routes for trips
-app.get('/trips', async (request, response) => {
+
+app.get('/api/trips', async (request, response) => {
     const result = await database.raw('select * from trips')
     response.status(200)
     response.json(result)
 });
 
 
-app.get('/trips/:id', async (request, response) => {
+app.get('/api/trips/:id', async (request, response) => {
     const id = Number(request.params.id)
     const result = await database.raw(`select * from trips where id = ${id}`)
     response.status(200)
     response.json(result)
+    console.log(result);
 });
 
 
-app.post('/trips', async (request, response) => {  //not yet finished
+app.post('/api/trips', async (request, response) => {
+    console.log("create ...");
     const trip = request.body
-    const insertResult = await database.raw(`insert into trips (date, destination) values ('${trip.date}','${trip.destination}')`)
+    await database.raw(`insert into trips (date, destination) values ('${trip.date}','${trip.destination}')`)
     const newTrip = await database.raw(`SELECT * FROM trips ORDER BY id DESC LIMIT 1;`)
     response.status(200)
     response.json(newTrip)
 });
 
 
-app.put('/trips/:id', async (request, response) => {
+app.put('/api/trips/:id', async (request, response) => {
     try {
         const id = Number(request.params.id)
         const trip = request.body
@@ -79,7 +82,7 @@ app.put('/trips/:id', async (request, response) => {
 });
 
 
-app.delete('/trips/:id', async (request, response) => {
+app.delete('/api/trips/:id', async (request, response) => {
     const id = Number(request.params.id)
     await database.raw(`delete from trips where id=${id}`)
     response.status(200)
@@ -92,7 +95,8 @@ app.all('/*', async (request, response) => {
     response.json({ error: 'This route does not exist' });
 });
 
-
+const hostname = 'localhost';
+const port = 3000;
 app.listen(port, hostname, () => {
     console.log(`Server listening on http://${hostname}:${port}`)
 });
