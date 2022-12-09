@@ -1,0 +1,9 @@
+.invalidPassword {
+    color: red;
+    display: none;
+}
+
+.invalidUsername {
+    color: red;
+    display: none;
+}

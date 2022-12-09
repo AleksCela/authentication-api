@@ -12,18 +12,20 @@ app.post('/api/sign-up', async (request, response) => {
     const credentials = request.body
     const username = credentials.username;
     const password = credentials.password
-    if (validatePassword(password) && validateUsername(username)) {
+    console.log(username, password);
+    if (validatePassword(password) && await validateUsername(username)) {
         await database.raw(`insert into loginInfo (username, password) values ('${username}','${password}')`)
         const newAccount = await database.raw(`SELECT * FROM loginInfo ORDER BY id DESC LIMIT 1;`)
         response.status(200)
         response.json(newAccount)
     } else if (!validatePassword(password)) {
+        response.status(401)
         response.json("Password is invalid")
     } else {
+        response.status(401)
         response.json("Username is invalid")
     }
 });
-
 
 app.post('/api/sign-in', async (request, response) => {
     const credentials = request.body
@@ -32,10 +34,10 @@ app.post('/api/sign-in', async (request, response) => {
     const authentication = await database.raw(`select username from loginInfo where username='${username}' AND password='${password}'`)
     if (authentication.length == 0) {
         response.status(401)
-        response.json("Username and passowrd do not match!")
+        response.json("Username and password do not match!")
     } else {
         response.status(200)
-        response.json(authentication)
+        response.json(authentication[0])
     }
 });
 
@@ -59,7 +61,6 @@ app.get('/api/trips/:id', async (request, response) => {
 
 
 app.post('/api/trips', async (request, response) => {
-    console.log("create ...");
     const trip = request.body
     await database.raw(`insert into trips (date, destination) values ('${trip.date}','${trip.destination}')`)
     const newTrip = await database.raw(`SELECT * FROM trips ORDER BY id DESC LIMIT 1;`)
@@ -71,13 +72,12 @@ app.post('/api/trips', async (request, response) => {
 app.put('/api/trips/:id', async (request, response) => {
     try {
         const id = Number(request.params.id)
-        const trip = request.body
-        await database.raw(`update trips set date=${trip.date}, destination = '${trip.destination}' where id = ${id};`)
-        const result = await database.raw(`select * from trips where id=${id}`)
+        const { date, destination } = request.body
+        await database.raw(`update trips set date = '${date}', destination = '${destination}' where id = ${id};`)
         response.status(200)
-        response.json(result)
     } catch (error) {
         response.status(404)
+        console.log("Error in update");
     }
 });
 

@@ -12,7 +12,8 @@ export function containsSpecialChars(str) {
 
 export async function validateUsername(username) {
     const usernameCheck = await database.raw(`select username from loginInfo where username='${username}'`)
-    if (!usernameCheck.length == 0) {
+    console.log(usernameCheck);
+    if (usernameCheck.length > 0) {
         console.log("Username already exist");
         return false;
     } else if (username.length < 5 || username.length > 12) {

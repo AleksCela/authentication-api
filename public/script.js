@@ -7,8 +7,7 @@ const onSubmit = async (event) => {
     const formData = new FormData(form);
     const destination = formData.get("destination");
     const date = formData.get("date");
-    const days = formData.get('number')
-    const values = { destination, date, days };
+    const values = { destination, date };
     const response = await fetch('/api/trips', {
         method: 'POST', headers: {
             'Content-Type': 'application/json'
