@@ -31,7 +31,7 @@ app.post('/api/sign-in', async (request, response) => {
     const credentials = request.body
     const username = credentials.username;
     const password = credentials.password
-    const authentication = await database.raw(`select username from loginInfo where username='${username}' AND password='${password}'`)
+    const authentication = await database.raw(`select username,id from loginInfo where username='${username}' AND password='${password}'`)
     if (authentication.length == 0) {
         response.status(401)
         response.json("Username and password do not match!")
@@ -40,7 +40,6 @@ app.post('/api/sign-in', async (request, response) => {
         response.json(authentication[0])
     }
 });
-
 //---------------------------------------------------------
 //API routes for trips
 
@@ -62,7 +61,7 @@ app.get('/api/trips/:id', async (request, response) => {
 
 app.post('/api/trips', async (request, response) => {
     const trip = request.body
-    await database.raw(`insert into trips (date, destination) values ('${trip.date}','${trip.destination}')`)
+    await database.raw(`insert into trips (date, destination, user_id) values ('${trip.date}','${trip.destination}','${trip.user_id}')`)
     const newTrip = await database.raw(`SELECT * FROM trips ORDER BY id DESC LIMIT 1;`)
     response.status(200)
     response.json(newTrip)
